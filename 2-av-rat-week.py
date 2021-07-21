@@ -2,13 +2,11 @@ import justpy as jp
 import pandas
 from datetime import datetime
 from pytz import utc
-import matplotlib.pyplot as plt
 
 data = pandas.read_csv("reviews.csv", parse_dates=['Timestamp'])
-data['Day'] = data['Timestamp'].dt.date
-day_average = data.groupby(['Day']).mean()
+data['Week'] = data['Timestamp'].dt.strftime("%Y-%U")
+week_average = data.groupby(['Week']).mean()
 
-#justpy converts this to a python dictionary for highcharts to use
 chart_def = """ 
   {
     chart: {
@@ -74,14 +72,11 @@ def app():
     wp = jp.QuasarPage()
     h1 = jp.QDiv(a=wp, text="Analysis of Course Reviews", classes="text-h3 text-center q-pa-md")
     p1 = jp.QDiv(a=wp, text="These graphs represent course review analysis", classes ="text-p1 text-center")
-    hc = jp.HighCharts(a=wp, options=chart_def) #uses HighCharts JS framework, so code fed in is JS
-    # print(hc.options)
-    # print(type(hc.options)) these lines prove that it is now a python dictionary from a JS object
-    hc.options.title.text = "Average Raying by Day" #because its a python dictionary you can use python to dynamically change it
-    #series is a key in the chart_def dictionary that contains the data for the graph, so you can replce the template code with what you need
+    
 
-    hc.options.xAxis.categories = list(day_average.index)
-    hc.options.series[0].data = list(day_average['Rating'])
+    hc = jp.HighCharts(a=wp, options=chart_def)
+    hc.options.xAxis.categories = list(week_average.index)
+    hc.options.series[0].data = list(week_average['Rating'])
     return wp
 
 
